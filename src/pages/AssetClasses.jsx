@@ -48,12 +48,11 @@ export default function AssetClasses() {
         return;
       }
       setCurrentUser(user);
-      const filter = { created_by: user.email };
 
       // Concurrently load asset classes and instruments
       const [assetClassesData, instrumentsData] = await Promise.all([
-        AssetClass.filter(filter),
-        Instrument.filter(filter),
+        AssetClass.list(),
+        Instrument.list(),
       ]);
       
       setAssetClasses(assetClassesData || []);

@@ -54,14 +54,13 @@ export default function Instruments() {
         return;
       }
       setCurrentUser(user);
-      const filter = { created_by: user.email };
 
       const [instrumentsData, assetClassesData, holdingsData, manualAssetsData, manualAssetValuesData] = await Promise.all([
-        Instrument.filter(filter),
-        AssetClass.filter(filter),
-        Holding.filter(filter, "-date"),
-        ManualAsset.filter(filter),
-        ManualAssetValue.filter(filter, "-date")
+        Instrument.list(),
+        AssetClass.list(),
+        Holding.list("-date"),
+        ManualAsset.list(),
+        ManualAssetValue.list("-date")
       ]);
       setInstruments(instrumentsData || []);
       setAssetClasses(assetClassesData || []);

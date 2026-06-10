@@ -28,6 +28,10 @@ export default async function handler(req, res) {
     res.status(400).json({ error: 'Invalid appId or entity' });
     return;
   }
+  if (apiKey.length > 200 || !/^[\x20-\x7E]+$/.test(apiKey)) {
+    res.status(400).json({ error: 'Invalid api_key format' });
+    return;
+  }
 
   try {
     const upstream = await fetch(

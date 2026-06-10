@@ -12,26 +12,19 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const applySession = (session) => {
       if (session?.user) {
-        setUser({
-          id: session.user.id,
-          email: session.user.email,
-          full_name:
-            session.user.user_metadata?.full_name ||
-            session.user.user_metadata?.name ||
-            session.user.email,
-          avatar_url:
-            session.user.user_metadata?.avatar_url ||
-            session.user.user_metadata?.picture ||
-            null,
+        // Reuse the same user-shape helper as client.auth.me()
+        client.auth.me().then((me) => {
+          setUser(me);
+          setIsAuthenticated(true);
+          setAuthError(null);
+          setIsLoadingAuth(false);
         });
-        setIsAuthenticated(true);
-        setAuthError(null);
       } else {
         setUser(null);
         setIsAuthenticated(false);
+        setIsLoadingAuth(false);
         setAuthError({ type: 'auth_required', message: 'Authentication required' });
       }
-      setIsLoadingAuth(false);
     };
 
     supabase.auth.getSession().then(({ data }) => applySession(data.session));

@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { Holding, AssetClass, Instrument, User, ManualAsset, ManualAssetValue } from "@/entities/all";
+import { Holding, AssetClass, Instrument, ManualAsset, ManualAssetValue } from "@/entities/all";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
@@ -47,19 +47,12 @@ export default function PortfolioTimeline() {
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const user = await User.me();
-      if (!user) {
-        setIsLoading(false);
-        return;
-      }
-      const filter = { created_by: user.email };
-
       const [holdings, assetClassesData, instruments, manualAssetsData, manualAssetValuesData] = await Promise.all([
-        Holding.filter(filter),
-        AssetClass.filter(filter),
-        Instrument.filter(filter),
-        ManualAsset.filter(filter),
-        ManualAssetValue.filter(filter)
+        Holding.list(),
+        AssetClass.list(),
+        Instrument.list(),
+        ManualAsset.list(),
+        ManualAssetValue.list()
       ]);
 
       setAssetClasses(assetClassesData || []);
@@ -105,7 +98,7 @@ export default function PortfolioTimeline() {
         const classInstruments = instruments.filter(i => i.asset_class_id === ac.id);
         const classValue = classInstruments.reduce((sum, i) => {
             const holding = latestHoldings.get(i.id);
-            return sum + (holding ? holding.total_value_ils : 0);
+            return sum + (holding ? parseFloat(holding.total_value_ils) || 0 : 0);
         }, 0);
         dataPoint[ac.name] = classValue;
         dataPoint.totalValue += classValue;
@@ -115,7 +108,7 @@ export default function PortfolioTimeline() {
       const manualValuesUpToMonth = sortedManualValues.filter(v => parseISO(v.date) <= monthEnd);
       const latestManualValues = new Map();
       manualValuesUpToMonth.forEach(v => latestManualValues.set(v.manual_asset_id, v));
-      const manualTotal = Array.from(latestManualValues.values()).reduce((sum, v) => sum + (v.value_ils || 0), 0);
+      const manualTotal = Array.from(latestManualValues.values()).reduce((sum, v) => sum + (parseFloat(v.value_ils) || 0), 0);
       
       dataPoint['Manual Assets'] = manualTotal;
       dataPoint.totalValue += manualTotal;

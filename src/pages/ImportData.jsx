@@ -68,6 +68,8 @@ export default function ImportData() {
   const handleFetchPreview = async (e) => {
     e.preventDefault();
     setError(null);
+    setFetched(null);
+    setExistingCounts(null);
     setPhase("fetching");
     try {
       const entries = await Promise.all(
@@ -164,7 +166,7 @@ export default function ImportData() {
                 Credentials are only used for this import and never stored.
               </p>
             </div>
-            <Button type="submit" disabled={phase === "fetching" || phase === "importing"}>
+            <Button type="submit" disabled={phase !== "idle"}>
               {phase === "fetching" ? (
                 <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Fetching…</>
               ) : (
