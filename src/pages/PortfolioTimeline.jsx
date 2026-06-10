@@ -98,7 +98,7 @@ export default function PortfolioTimeline() {
         const classInstruments = instruments.filter(i => i.asset_class_id === ac.id);
         const classValue = classInstruments.reduce((sum, i) => {
             const holding = latestHoldings.get(i.id);
-            return sum + (holding ? parseFloat(holding.total_value_ils) || 0 : 0);
+            return sum + (holding ? holding.total_value_ils || 0 : 0);
         }, 0);
         dataPoint[ac.name] = classValue;
         dataPoint.totalValue += classValue;
@@ -108,7 +108,7 @@ export default function PortfolioTimeline() {
       const manualValuesUpToMonth = sortedManualValues.filter(v => parseISO(v.date) <= monthEnd);
       const latestManualValues = new Map();
       manualValuesUpToMonth.forEach(v => latestManualValues.set(v.manual_asset_id, v));
-      const manualTotal = Array.from(latestManualValues.values()).reduce((sum, v) => sum + (parseFloat(v.value_ils) || 0), 0);
+      const manualTotal = Array.from(latestManualValues.values()).reduce((sum, v) => sum + (v.value_ils || 0), 0);
       
       dataPoint['Manual Assets'] = manualTotal;
       dataPoint.totalValue += manualTotal;

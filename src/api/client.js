@@ -9,12 +9,19 @@ export const supabase = createClient(
 //   id uuid, user_id uuid, entity text, created_date, updated_date, data jsonb
 // RLS restricts every row to its owner, so list/filter are already user-scoped.
 
-const rowToObj = (row) => ({
-  ...row.data,
-  id: row.id,
-  created_date: row.created_date,
-  updated_date: row.updated_date,
-});
+// These fields come back as strings when imported from CSV; coerce to numbers here
+// so every consumer gets the right type without needing to call parseFloat().
+const NUMERIC_FIELDS = new Set(['target_percent', 'total_value_ils', 'value_ils']);
+
+const rowToObj = (row) => {
+  const obj = { ...row.data, id: row.id, created_date: row.created_date, updated_date: row.updated_date };
+  for (const field of NUMERIC_FIELDS) {
+    if (field in obj && obj[field] !== null && obj[field] !== '') {
+      obj[field] = parseFloat(obj[field]);
+    }
+  }
+  return obj;
+};
 
 const TIMESTAMP_FIELDS = ['created_date', 'updated_date'];
 

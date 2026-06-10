@@ -59,7 +59,7 @@ export default function AllocationTable({ assetData = [], totalValue = 0 }) {
               {assetData.map((asset) => {
                 const isExpanded = expandedRows[asset.id];
                 const currentValue = asset.currentValue || 0;
-                const targetPercent = asset.target_percent || 0;
+                const targetPercent = parseFloat(asset.target_percent) || 0;
                 const currentPercent = totalValue > 0 ? (currentValue / totalValue) * 100 : 0;
                 const rebalance = getRebalanceInfo(currentValue, targetPercent);
                 

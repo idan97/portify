@@ -82,7 +82,7 @@ export default function Dashboard() {
       }
     });
 
-    const currentHoldingsValue = Array.from(latestHoldings.values()).reduce((sum, h) => sum + (parseFloat(h.total_value_ils) || 0), 0);
+    const currentHoldingsValue = Array.from(latestHoldings.values()).reduce((sum, h) => sum + (h.total_value_ils || 0), 0);
 
     // Calculate Total Return
     if (holdings.length > 0) {
@@ -90,7 +90,7 @@ export default function Dashboard() {
         const firstDate = sortedHoldings[0].date;
         const initialValue = sortedHoldings
             .filter(h => h.date === firstDate)
-            .reduce((sum, h) => sum + (parseFloat(h.total_value_ils) || 0), 0);
+            .reduce((sum, h) => sum + (h.total_value_ils || 0), 0);
 
         const returnAmount = currentHoldingsValue - initialValue;
         const returnPercent = initialValue > 0 ? (returnAmount / initialValue) * 100 : 0;
@@ -105,7 +105,7 @@ export default function Dashboard() {
       const latestHolding = latestHoldings.get(instrument.id);
       return {
         ...instrument,
-        currentValue: parseFloat(latestHolding?.total_value_ils) || 0,
+        currentValue: latestHolding?.total_value_ils || 0,
         lastUpdated: latestHolding?.date
       };
     });
@@ -133,7 +133,7 @@ export default function Dashboard() {
             latestManualValues.set(v.manual_asset_id, v);
         }
     });
-    const manualTotal = Array.from(latestManualValues.values()).reduce((sum, v) => sum + (parseFloat(v.value_ils) || 0), 0);
+    const manualTotal = Array.from(latestManualValues.values()).reduce((sum, v) => sum + (v.value_ils || 0), 0);
     setManualAssetsValue(manualTotal);
     
     setTotalValue(holdingsValue + freeCash + manualTotal);

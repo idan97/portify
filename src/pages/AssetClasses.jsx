@@ -124,7 +124,7 @@ export default function AssetClasses() {
     return instruments.filter(i => i.asset_class_id === assetClassId).length;
   };
 
-  const totalTarget = assetClasses.reduce((sum, asset) => sum + asset.target_percent, 0);
+  const totalTarget = assetClasses.reduce((sum, asset) => sum + (parseFloat(asset.target_percent) || 0), 0);
 
   // Handlers for the new instrument modal
   const handleAddInstrumentClick = (asset) => {

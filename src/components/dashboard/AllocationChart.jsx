@@ -10,7 +10,7 @@ export default function AllocationChart({ assetData = [], totalValue = 0 }) {
       value: asset?.currentValue || 0,
       percent: totalValue > 0 ? (((asset?.currentValue || 0) / totalValue) * 100) : 0,
       color: asset?.color || "#3b82f6",
-      target: asset?.target_percent || 0
+      target: parseFloat(asset?.target_percent) || 0
     }));
 
   const formatCurrency = (amount) => {
