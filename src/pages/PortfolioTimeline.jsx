@@ -29,7 +29,7 @@ import {
 } from "date-fns";
 import { TimelineSkeleton } from "../components/shared/LoadingSkeletons";
 import { useUsdRate } from "@/lib/useUsdRate";
-import { convertHoldings } from "@/lib/currency";
+import { convertHoldings, convertManualValues } from "@/lib/currency";
 
 const TIME_PERIODS = [
   { label: "1M", value: "1M", months: 1 },
@@ -78,17 +78,29 @@ export default function PortfolioTimeline() {
   }, [selectedPeriod, timelineData]);
 
   // Regenerate the timeline whenever data or the USD rate changes, converting
-  // USD holdings to shekels at today's rate.
+  // USD holdings and USD manual-asset values to shekels at today's rate.
   useEffect(() => {
-    const converted = convertHoldings(holdings, instruments, usdRate);
+    const convertedHoldings = convertHoldings(holdings, instruments, usdRate);
+    const convertedManual = convertManualValues(
+      manualAssetValues,
+      manualAssets,
+      usdRate,
+    );
     const timeline = generateTimelineData(
-      converted,
+      convertedHoldings,
       assetClasses,
       instruments,
-      manualAssetValues,
+      convertedManual,
     );
     setTimelineData(timeline);
-  }, [holdings, instruments, assetClasses, manualAssetValues, usdRate]);
+  }, [
+    holdings,
+    instruments,
+    assetClasses,
+    manualAssetValues,
+    manualAssets,
+    usdRate,
+  ]);
 
   const loadData = async () => {
     setIsLoading(true);

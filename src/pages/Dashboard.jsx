@@ -19,7 +19,7 @@ import RebalanceModal from "../components/dashboard/RebalanceModal";
 import { parseISO, format } from "date-fns";
 import { DashboardSkeleton } from "../components/shared/LoadingSkeletons";
 import { useUsdRate } from "@/lib/useUsdRate";
-import { convertHoldings } from "@/lib/currency";
+import { convertHoldings, convertManualValues } from "@/lib/currency";
 
 const ASSET_COLORS = [
   "#3b82f6",
@@ -176,8 +176,13 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
+    const converted = convertManualValues(
+      manualAssetValues,
+      manualAssets,
+      usdRate,
+    );
     const latestManualValues = new Map();
-    manualAssetValues.forEach((v) => {
+    converted.forEach((v) => {
       if (
         !latestManualValues.has(v.manual_asset_id) ||
         parseISO(v.date) >
@@ -193,7 +198,7 @@ export default function Dashboard() {
     setManualAssetsValue(manualTotal);
 
     setTotalValue(holdingsValue + freeCash + manualTotal);
-  }, [holdingsValue, freeCash, manualAssetValues]);
+  }, [holdingsValue, freeCash, manualAssetValues, manualAssets, usdRate]);
 
   const handleFreeCashChange = (e) => {
     const value = parseFloat(e.target.value);
@@ -206,8 +211,13 @@ export default function Dashboard() {
   };
 
   const getManualAssetsDisplay = () => {
+    const converted = convertManualValues(
+      manualAssetValues,
+      manualAssets,
+      usdRate,
+    );
     const latestManualValues = new Map();
-    manualAssetValues.forEach((v) => {
+    converted.forEach((v) => {
       if (
         !latestManualValues.has(v.manual_asset_id) ||
         parseISO(v.date) >

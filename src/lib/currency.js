@@ -26,5 +26,24 @@ export function convertHoldings(holdings = [], instruments = [], usdRate = 1) {
   });
 }
 
+// Return a copy of `values` where each `value_ils` is real shekels, resolving
+// each value's currency via its manual asset. Mirror of convertHoldings for
+// manual-asset values.
+export function convertManualValues(
+  values = [],
+  manualAssets = [],
+  usdRate = 1,
+) {
+  const currencyByAsset = new Map(
+    manualAssets.map((a) => [a.id, instrumentCurrency(a)]),
+  );
+  return values.map((v) => {
+    const currency = currencyByAsset.get(v.manual_asset_id) || "ILS";
+    return currency === "USD"
+      ? { ...v, value_ils: (v.value_ils || 0) * (usdRate || 1) }
+      : v;
+  });
+}
+
 export const formatIls = (n) => `₪${Math.round(n || 0).toLocaleString()}`;
 export const formatUsd = (n) => `$${Math.round(n || 0).toLocaleString()}`;

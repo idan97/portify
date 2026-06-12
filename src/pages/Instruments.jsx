@@ -49,7 +49,11 @@ import QuickEntryTable from "../components/instruments/QuickEntryTable";
 import { latestByKey } from "@/lib/latest";
 import { useToast } from "@/components/ui/use-toast";
 import { useUsdRate } from "@/lib/useUsdRate";
-import { instrumentCurrency, convertHoldings } from "@/lib/currency";
+import {
+  instrumentCurrency,
+  convertHoldings,
+  convertManualValues,
+} from "@/lib/currency";
 import { Badge } from "@/components/ui/badge";
 
 export default function Instruments() {
@@ -93,7 +97,10 @@ export default function Instruments() {
     date: format(new Date(), "yyyy-MM-dd"),
     total_value_ils: "",
   });
-  const [manualAssetData, setManualAssetData] = useState({ name: "" });
+  const [manualAssetData, setManualAssetData] = useState({
+    name: "",
+    currency: "ILS",
+  });
   const [manualAssetValueData, setManualAssetValueData] = useState({
     date: format(new Date(), "yyyy-MM-dd"),
     value_ils: "",
@@ -171,7 +178,7 @@ export default function Instruments() {
       date: format(new Date(), "yyyy-MM-dd"),
       total_value_ils: "",
     });
-    setManualAssetData({ name: "" });
+    setManualAssetData({ name: "", currency: "ILS" });
     setManualAssetValueData({
       date: format(new Date(), "yyyy-MM-dd"),
       value_ils: "",
@@ -322,7 +329,10 @@ export default function Instruments() {
   const handleEditManualAsset = (asset) => {
     resetAllForms();
     setEditingManualAsset(asset);
-    setManualAssetData({ name: asset.name });
+    setManualAssetData({
+      name: asset.name,
+      currency: instrumentCurrency(asset),
+    });
     setIsManualAssetFormOpen(true);
   };
 
@@ -345,11 +355,13 @@ export default function Instruments() {
 
   const handleEditManualAssetValueClick = (value, asset) => {
     resetAllForms();
-    setEditingManualAssetValue(value);
+    // `value` may be a converted (shekel) copy; edit the RAW stored number.
+    const raw = manualAssetValues.find((v) => v.id === value.id) || value;
+    setEditingManualAssetValue(raw);
     setSelectedManualAsset(asset);
     setManualAssetValueData({
-      date: format(new Date(value.date), "yyyy-MM-dd"),
-      value_ils: value.value_ils.toString(),
+      date: format(new Date(raw.date), "yyyy-MM-dd"),
+      value_ils: raw.value_ils.toString(),
     });
     setIsManualAssetValueFormOpen(true);
   };
@@ -361,13 +373,19 @@ export default function Instruments() {
     }
   };
 
-  // `holdings` stays raw (dollars for USD instruments) so editing/seeding works
-  // on the entered number. For Manage-mode display we convert to shekels.
+  // `holdings` / `manualAssetValues` stay raw (dollars for USD assets) so
+  // editing/seeding works on the entered number. For Manage-mode display we
+  // convert to shekels.
   const displayHoldings = convertHoldings(holdings, instruments, usdRate);
+  const displayManualValues = convertManualValues(
+    manualAssetValues,
+    manualAssets,
+    usdRate,
+  );
   const getInstrumentHoldings = (id) =>
     displayHoldings.filter((h) => h.instrument_id === id);
   const getManualAssetValues = (id) =>
-    manualAssetValues.filter((v) => v.manual_asset_id === id);
+    displayManualValues.filter((v) => v.manual_asset_id === id);
   const formatCurrency = (amount) =>
     `₪${Math.round(parseFloat(amount) || 0).toLocaleString()}`;
   const groupedInstruments = instruments.reduce((acc, i) => {
@@ -551,11 +569,35 @@ export default function Instruments() {
                     id="asset_name"
                     value={manualAssetData.name}
                     onChange={(e) =>
-                      setManualAssetData({ name: e.target.value })
+                      setManualAssetData({
+                        ...manualAssetData,
+                        name: e.target.value,
+                      })
                     }
                     placeholder="e.g., Bank Savings"
                     required
                   />
+                </div>
+                <div>
+                  <Label htmlFor="ma_currency">Currency</Label>
+                  <Select
+                    value={manualAssetData.currency || "ILS"}
+                    onValueChange={(val) =>
+                      setManualAssetData({ ...manualAssetData, currency: val })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ILS">₪ Shekel (ILS)</SelectItem>
+                      <SelectItem value="USD">$ Dollar (USD)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-slate-500 mt-1">
+                    USD values are entered in dollars and shown in ₪ at today's
+                    rate.
+                  </p>
                 </div>
                 <div className="flex gap-3 pt-4">
                   <Button
@@ -613,7 +655,14 @@ export default function Instruments() {
                     <CardHeader>
                       <div className="flex justify-between items-start">
                         <div>
-                          <CardTitle>{asset.name}</CardTitle>
+                          <CardTitle className="flex items-center gap-2">
+                            {asset.name}
+                            {instrumentCurrency(asset) === "USD" && (
+                              <Badge variant="outline" className="text-xs">
+                                USD
+                              </Badge>
+                            )}
+                          </CardTitle>
                           {latestValue && (
                             <div className="mt-2">
                               <p className="text-sm text-slate-600">
@@ -1044,7 +1093,10 @@ export default function Instruments() {
               />
             </div>
             <div>
-              <Label htmlFor="value_ils">Value (₪)</Label>
+              <Label htmlFor="value_ils">
+                Value (
+                {instrumentCurrency(selectedManualAsset) === "USD" ? "$" : "₪"})
+              </Label>
               <Input
                 id="value_ils"
                 type="number"
@@ -1058,6 +1110,17 @@ export default function Instruments() {
                 }
                 required
               />
+              {instrumentCurrency(selectedManualAsset) === "USD" &&
+                manualAssetValueData.value_ils && (
+                  <p className="text-xs text-slate-500 mt-1">
+                    ≈ ₪
+                    {Math.round(
+                      (parseFloat(manualAssetValueData.value_ils) || 0) *
+                        usdRate,
+                    ).toLocaleString()}{" "}
+                    at today's rate
+                  </p>
+                )}
             </div>
             <div className="flex gap-3 pt-4">
               <Button

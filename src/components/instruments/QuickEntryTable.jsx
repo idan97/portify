@@ -25,6 +25,10 @@ export default function QuickEntryTable({
     () => new Map(instruments.map((i) => [i.id, instrumentCurrency(i)])),
     [instruments],
   );
+  const manualCurrencyById = useMemo(
+    () => new Map(manualAssets.map((a) => [a.id, instrumentCurrency(a)])),
+    [manualAssets],
+  );
 
   // Seed each row with its last RAW value (dollars for USD instruments).
   const seeded = useMemo(() => {
@@ -88,7 +92,7 @@ export default function QuickEntryTable({
         key: manualKey(a.id),
         name: a.name,
         symbol: null,
-        currency: "ILS",
+        currency: manualCurrencyById.get(a.id) || "ILS",
         last: last ? last.value_ils : null,
         lastDate: last?.date,
         index: inputIndex,
@@ -120,10 +124,12 @@ export default function QuickEntryTable({
     });
   });
 
-  const rowCurrency = (key) =>
-    key.startsWith("instrument:")
-      ? currencyById.get(key.split(":")[1]) || "ILS"
-      : "ILS";
+  const rowCurrency = (key) => {
+    const id = key.split(":")[1];
+    return key.startsWith("instrument:")
+      ? currencyById.get(id) || "ILS"
+      : manualCurrencyById.get(id) || "ILS";
+  };
 
   // Live stats. Sum each row's value converted to shekels so the total is in ₪.
   const changedCount = Object.keys(values).filter(
