@@ -28,6 +28,8 @@ import {
   startOfYear,
 } from "date-fns";
 import { TimelineSkeleton } from "../components/shared/LoadingSkeletons";
+import { useUsdRate } from "@/lib/useUsdRate";
+import { convertHoldings } from "@/lib/currency";
 
 const TIME_PERIODS = [
   { label: "1M", value: "1M", months: 1 },

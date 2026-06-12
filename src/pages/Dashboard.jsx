@@ -18,6 +18,8 @@ import { SlidersHorizontal, PiggyBank } from "lucide-react";
 import RebalanceModal from "../components/dashboard/RebalanceModal";
 import { parseISO, format } from "date-fns";
 import { DashboardSkeleton } from "../components/shared/LoadingSkeletons";
+import { useUsdRate } from "@/lib/useUsdRate";
+import { convertHoldings } from "@/lib/currency";
 
 const ASSET_COLORS = [
   "#3b82f6",

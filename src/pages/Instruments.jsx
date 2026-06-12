@@ -49,6 +49,8 @@ import QuickEntryTable from "../components/instruments/QuickEntryTable";
 import { latestByKey } from "@/lib/latest";
 import { useToast } from "@/components/ui/use-toast";
 import { useUsdRate } from "@/lib/useUsdRate";
+import { instrumentCurrency, convertHoldings } from "@/lib/currency";
+import { Badge } from "@/components/ui/badge";
 
 export default function Instruments() {
   const [instruments, setInstruments] = useState([]);
