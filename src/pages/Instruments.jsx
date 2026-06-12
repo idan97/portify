@@ -26,7 +26,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Edit, Trash2, History, Calendar, PiggyBank } from "lucide-react";
+import {
+  Plus,
+  Edit,
+  Trash2,
+  History,
+  Calendar,
+  PiggyBank,
+  Zap,
+  LayoutList,
+} from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -36,6 +45,9 @@ import {
 } from "@/components/ui/dialog";
 import { format } from "date-fns";
 import { InstrumentsSkeleton } from "../components/shared/LoadingSkeletons";
+import QuickEntryTable from "../components/instruments/QuickEntryTable";
+import { latestByKey } from "@/lib/latest";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function Instruments() {
   const [instruments, setInstruments] = useState([]);
